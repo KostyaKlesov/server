@@ -1,6 +1,8 @@
 const http = require('http'); // модуль для создания http сервера
 const fs = require('fs'); // модуль для работы с файлами
 const express = require('express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 class Server {
   constructor() {
@@ -8,6 +10,20 @@ class Server {
     this.users = {};
     this.app = express();
     this.app.use(express.json());
+
+    const options = {
+      definition: {
+        openapi: '3.0.0',
+        info: {
+          title: 'User API',
+          version: '1.0.0',
+        },
+      },
+      apis: ['./index.js'], // Specify the path to the main file (or files) that contain your route definitions
+    };
+
+    this.specs = swaggerJsdoc(options);
+    this.app.use('/docs', swaggerUi.serve, swaggerUi.setup(this.specs));
   }
 
   addRoute(route, method, handler) {
@@ -99,6 +115,12 @@ class Server {
       res.send("User deleted");
     });
 
+    this.app.get('/swagger.json', (req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(this.specs);
+    });
+    this.app.use('/docs', swaggerUi.serve, swaggerUi.setup(this.specs));
+
     // Запускаем сервер на указанном порту
     this.app.listen(port, () => {
       console.log(`Сервер запущен на порту ${port}`);
@@ -161,3 +183,5 @@ server.addRoute("/user", "DELETE", () => {
 
 
 server.start(3000);
+
+module.exports = Server;
