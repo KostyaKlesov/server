@@ -19,12 +19,59 @@ class Server {
           version: '1.0.0',
         },
       },
-      apis: ['./index.js'], // Specify the path to the main file (or files) that contain your route definitions
+      apis: ['./main.js'], // Specify the path to the main file (or files) that contain your route definitions
     };
 
     this.specs = swaggerJsdoc(options);
     this.app.use('/docs', swaggerUi.serve, swaggerUi.setup(this.specs));
+    
+    /**
+     * @openapi
+     * /users:
+     *   get:
+     *     summary: Get all users
+     *     responses:
+     *       200:
+     *         description: OK
+     */
+    this.app.get('/users', (req, res) => {
+      // Your code to get all users
+      res.json(this.users);
+    });
+
+    /**
+     * @openapi
+     * /users/{id}:
+     *   get:
+     *     summary: Get a user by ID
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: ID of the user
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: OK
+     *       404:
+     *         description: User not found
+     */
+    this.app.get('/users/:id', (req, res) => {
+      const userId = req.params.id;
+      // Your code to get a user by ID
+      const user = this.users[userId];
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    });
   }
+
+  
+
+
 
   addRoute(route, method, handler) {
     const routeKey = `${method}:${route}`;
@@ -77,6 +124,17 @@ class Server {
 
   start(port) {
     // Добавляем маршруты в express
+    /**
+     * @openapi
+     * /user:
+     *   get:
+     *     summary: Get a user
+     *     responses:
+     *       200:
+     *         description: OK
+     *       404:
+     *         description: User not found
+     */
     this.app.get('/user', (req, res) => {
       const userId = 123;
       const user = this.getUser(userId);
@@ -87,6 +145,30 @@ class Server {
       }
     });
 
+    /**
+     * @openapi
+     * /user:
+     *   post:
+     *     summary: Upload a user
+     *     parameters:
+     *       - name: body
+     *         in: body
+     *         required: true
+     *         schema:
+     *           type: object
+     *           properties:
+     *             username:
+     *                type: string 
+     *                example: defaultUser
+     *             password:
+     *                type: string
+     *                example: defaultPassword
+     *     responses:
+     *       200:
+     *         description: OK
+     *       404:
+     *         description: User not found
+     */
     this.app.post('/user', (req, res) => {
       const userId = 123;
       const name = "John";
@@ -98,6 +180,31 @@ class Server {
       }
     });
 
+
+    /**
+     * @openapi
+     * /user:
+     *   put:
+     *     summary: Update a user
+     *     parameters:
+     *       - name: body
+     *         in: body
+     *         required: true
+     *         schema:
+     *           type: object
+     *           properties:
+     *             username:
+     *                type: string 
+     *                example: defaultUser
+     *             password:
+     *                type: string
+     *                example: defaultPassword
+     *     responses:
+     *       200:
+     *         description: OK
+     *       404:
+     *         description: User not found
+     */
     this.app.put('/user', (req, res) => {
       const userId = 123;
       const newName = "Jane";
@@ -109,6 +216,18 @@ class Server {
       }
     });
 
+
+    /**
+     * @openapi
+     * /user:
+     *   delete:
+     *     summary: Delete a user
+     *     responses:
+     *       204:
+     *         description: Deleted
+     *       404:
+     *         description: User not found
+     */
     this.app.delete('/user', (req, res) => {
       const userId = 123;
       this.deleteUser(userId);
